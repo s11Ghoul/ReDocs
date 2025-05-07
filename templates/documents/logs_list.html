@@ -39,6 +39,59 @@
     </div>
 </div>
 
+<!-- Фильтры для логов -->
+<div class="card mb-4">
+    <div class="card-header bg-light">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-filter"></i> {% trans "Фильтры" %}
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label for="date_from" class="form-label">{% trans "Дата с" %}</label>
+                <input type="date" name="date_from" id="date_from" class="form-control"
+                       value="{{ filter_form.date_from.value|default_if_none:'' }}">
+            </div>
+
+            <div class="col-md-3">
+                <label for="date_to" class="form-label">{% trans "Дата по" %}</label>
+                <input type="date" name="date_to" id="date_to" class="form-control"
+                       value="{{ filter_form.date_to.value|default_if_none:'' }}">
+            </div>
+
+            <div class="col-md-3">
+                <label for="status" class="form-label">{% trans "Статус" %}</label>
+                <select name="status" id="status" class="form-select">
+                    <option value="">{% trans "Все статусы" %}</option>
+                    <option value="sent" {% if filter_form.status.value == 'sent' %}selected{% endif %}>
+                    {% trans "Отправлено" %}
+                    </option>
+                    <option value="failed" {% if filter_form.status.value == 'failed' %}selected{% endif %}>
+                    {% trans "Ошибка" %}
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="document_title" class="form-label">{% trans "Название документа" %}</label>
+                <input type="text" name="document_title" id="document_title" class="form-control"
+                       value="{{ filter_form.document_title.value|default_if_none:'' }}"
+                       placeholder="{% trans 'Поиск по названию...' %}">
+            </div>
+
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> {% trans "Применить" %}
+                </button>
+                <a href="{% url 'documents:logs_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> {% trans "Сбросить" %}
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Проверки работоспособности -->
 <div class="card mb-4">
     <div class="card-header bg-light">
@@ -187,7 +240,7 @@
                                                 {% trans "Текст сообщения" %}
                                             </div>
                                             <div class="card-body bg-light">
-                                                {{ log.message|safe }}
+                                                <iframe srcdoc="{{ log.message|escape }}" style="width:100%; height:300px; border:none;"></iframe>
                                             </div>
                                         </div>
 
@@ -220,12 +273,12 @@
                 <ul class="pagination justify-content-center">
                     {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1" aria-label="{% trans 'Первая' %}">
+                        <a class="page-link" href="?page=1{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" aria-label="{% trans 'Первая' %}">
                             <span aria-hidden="true">&laquo;&laquo;</span>
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="{% trans 'Предыдущая' %}">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" aria-label="{% trans 'Предыдущая' %}">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
@@ -236,19 +289,19 @@
                     <li class="page-item active"><span class="page-link">{{ num }}</span></li>
                     {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}">{{ num }}</a>
                     </li>
                     {% endif %}
                     {% endfor %}
 
                     {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="{% trans 'Следующая' %}">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" aria-label="{% trans 'Следующая' %}">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="{% trans 'Последняя' %}">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.urlencode %}&{{ request.GET.urlencode }}{% endif %}" aria-label="{% trans 'Последняя' %}">
                             <span aria-hidden="true">&raquo;&raquo;</span>
                         </a>
                     </li>

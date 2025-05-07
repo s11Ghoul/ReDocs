@@ -205,3 +205,57 @@ def dashboard_view(request):
     }
 
     return render(request, 'documents/dashboard.html', context)
+class LogsListView(LoginRequiredMixin, StaffRequiredMixin, ListView):
+    """Представление для просмотра логов отправки напоминаний"""
+    model = EmailLog
+    template_name = 'documents/logs_list.html'
+    context_object_name = 'logs'
+    paginate_by = 20
+
+    def get_queryset(self):
+        """Получение отфильтрованного списка логов"""
+        queryset = EmailLog.objects.all()
+
+        # Фильтрация по дате от
+        date_from = self.request.GET.get('date_from')
+        if date_from:
+            queryset = queryset.filter(sent_at__date__gte=date_from)
+
+        # Фильтрация по дате до
+        date_to = self.request.GET.get('date_to')
+        if date_to:
+            queryset = queryset.filter(sent_at__date__lte=date_to)
+
+        # Фильтрация по статусу
+        status = self.request.GET.get('status')
+        if status:
+            queryset = queryset.filter(status=status)
+
+        # Фильтрация по названию документа
+        document_title = self.request.GET.get('document_title')
+        if document_title:
+            queryset = queryset.filter(document__title__icontains=document_title)
+
+        return queryset.order_by('-sent_at')
+
+    def get_context_data(self, **kwargs):
+        """Дополнительные данные для шаблона"""
+        context = super().get_context_data(**kwargs)
+
+        # Добавляем статистику логов
+        context['total_logs'] = EmailLog.objects.count()
+        context['successful_logs'] = EmailLog.objects.filter(status='sent').count()
+        context['failed_logs'] = EmailLog.objects.filter(status='failed').count()
+
+        # Передаем значения для формы фильтрации
+        context['filter_form'] = {
+            'date_from': self.request.GET.get('date_from', ''),
+            'date_to': self.request.GET.get('date_to', ''),
+            'status': self.request.GET.get('status', ''),
+            'document_title': self.request.GET.get('document_title', ''),
+        }
+
+        # Добавляем логи проверок работоспособности
+        context['health_checks'] = HealthCheck.objects.all().order_by('-check_date')[:10]
+
+        return context
