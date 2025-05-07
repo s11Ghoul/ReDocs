@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Панель управления" %} | Re:Docs{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-tachometer-alt"></i> {% trans "Панель управления" %}
+{% endblock %}
+
+{% block content %}
+<!-- Статистические карточки -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="card-title">{% trans "Всего документов" %}</h6>
+                        <h2 class="card-text mb-0">{{ total_documents }}</h2>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-file-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-primary border-top border-light">
+                <a href="{% url 'documents:document_list' %}" class="text-white text-decoration-none">
+                    <small>{% trans "Просмотреть все" %} <i class="fas fa-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="card-title">{% trans "Действительные" %}</h6>
+                        <h2 class="card-text mb-0">{{ active_documents }}</h2>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-success border-top border-light">
+                <a href="{% url 'documents:document_list' %}?status=active" class="text-white text-decoration-none">
+                    <small>{% trans "Просмотреть" %} <i class="fas fa-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="card-title">{% trans "Скоро истекают" %}</h6>
+                        <h2 class="card-text mb-0">{{ expiring_soon_documents }}</h2>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-warning border-top border-light">
+                <a href="{% url 'documents:document_list' %}?status=expiring_soon" class="text-white text-decoration-none">
+                    <small>{% trans "Просмотреть" %} <i class="fas fa-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-white bg-danger h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="card-title">{% trans "Просроченные" %}</h6>
+                        <h2 class="card-text mb-0">{{ expired_documents }}</h2>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-times-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer bg-danger border-top border-light">
+                <a href="{% url 'documents:document_list' %}?status=expired" class="text-white text-decoration-none">
+                    <small>{% trans "Просмотреть" %} <i class="fas fa-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Документы, истекающие в ближайшие 30 дней -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-warning text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt"></i> {% trans "Документы, истекающие в ближайшие 30 дней" %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if upcoming_expirations %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                        <tr>
+                            <th>{% trans "Название" %}</th>
+                            <th>{% trans "Ответственный" %}</th>
+                            <th>{% trans "Срок" %}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for doc in upcoming_expirations %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'documents:document_detail' doc.pk %}">{{ doc.title }}</a>
+                            </td>
+                            <td>{{ doc.responsible_name }}</td>
+                            <td>{{ doc.expiry_date|date:"d.m.Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <p>{% trans "Нет документов, истекающих в ближайшие 30 дней" %}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% if upcoming_expirations %}
+            <div class="card-footer">
+                <a href="{% url 'documents:document_list' %}?status=expiring_soon" class="text-decoration-none">
+                    {% trans "Просмотреть все" %} <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Недавно просроченные документы -->
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-circle"></i> {% trans "Недавно просроченные документы" %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_expirations %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                        <tr>
+                            <th>{% trans "Название" %}</th>
+                            <th>{% trans "Ответственный" %}</th>
+                            <th>{% trans "Срок истек" %}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for doc in recent_expirations %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'documents:document_detail' doc.pk %}">{{ doc.title }}</a>
+                            </td>
+                            <td>{{ doc.responsible_name }}</td>
+                            <td>{{ doc.expiry_date|date:"d.m.Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <p>{% trans "Нет недавно просроченных документов" %}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% if recent_expirations %}
+            <div class="card-footer">
+                <a href="{% url 'documents:document_list' %}?status=expired" class="text-decoration-none">
+                    {% trans "Просмотреть все" %} <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Недавние уведомления -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-bell"></i> {% trans "Недавние уведомления" %}
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_notifications %}
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                        <tr>
+                            <th>{% trans "Документ" %}</th>
+                            <th>{% trans "Получатели" %}</th>
+                            <th>{% trans "Тема" %}</th>
+                            <th>{% trans "Дата отправки" %}</th>
+                            <th>{% trans "Статус" %}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for log in recent_notifications %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'documents:document_detail' log.document.pk %}">
+                                    {{ log.document.title }}
+                                </a>
+                            </td>
+                            <td>{{ log.recipients }}</td>
+                            <td>{{ log.subject }}</td>
+                            <td>{{ log.sent_at|date:"d.m.Y H:i" }}</td>
+                            <td>
+                                {% if log.status == 'sent' %}
+                                <span class="badge bg-success">{% trans "Отправлено" %}</span>
+                                {% else %}
+                                <span class="badge bg-danger">{% trans "Ошибка" %}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-info-circle fa-3x text-info mb-3"></i>
+                    <p>{% trans "Нет недавних уведомлений" %}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% if recent_notifications and user.is_staff %}
+            <div class="card-footer">
+                <a href="{% url 'documents:logs_list' %}" class="text-decoration-none">
+                    {% trans "Просмотреть журнал событий" %} <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Кнопка добавления нового документа -->
+<div class="row">
+    <div class="col-12 text-center">
+        <a href="{% url 'documents:document_create' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus-circle"></i> {% trans "Добавить новый документ" %}
+        </a>
+    </div>
+</div>
+{% endblock %}

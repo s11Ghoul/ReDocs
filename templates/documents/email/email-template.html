@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Напоминание о документе</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+        .header {
+        background-color: {% if days_left < 0 %}#dc3545{% elif days_left <= 30 %}#ffc107{% else %}#28a745{% endif %};
+        color: white;
+        padding: 20px;
+        text-align: center;
+        border-radius: 4px 4px 0 0;
+        margin: -20px -20px 20px;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            margin: 20px -20px -20px;
+            border-radius: 0 0 4px 4px;
+        }
+        .document-info {
+            background-color: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .info-row {
+            margin-bottom: 10px;
+        }
+        .label {
+            font-weight: bold;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+        }
+        .alert-danger {
+            background-color: #dc3545;
+        }
+        .alert-warning {
+            background-color: #ffc107;
+            color: #333;
+        }
+        .alert-success {
+            background-color: #28a745;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Напоминание о документе</h2>
+        <h3>{{ document.title }}</h3>
+    </div>
+
+    {% if days_left < 0 %}
+    <div class="alert alert-danger">
+        Документ просрочен!
+    </div>
+    {% elif days_left <= 30 %}
+    <div class="alert alert-warning">
+        Срок действия документа истекает через {{ days_left }} дней!
+    </div>
+    {% else %}
+    <div class="alert alert-success">
+        До окончания срока действия документа осталось {{ days_left }} дней.
+    </div>
+    {% endif %}
+
+    <p>Здравствуйте!</p>
+
+    <p>Это автоматическое уведомление о приближении срока окончания действия документа.</p>
+
+    <div class="document-info">
+        <div class="info-row">
+            <span class="label">Название документа:</span> {{ document.title }}
+        </div>
+        <div class="info-row">
+            <span class="label">Дата получения:</span> {{ document.received_date|date:"d.m.Y" }}
+        </div>
+        <div class="info-row">
+            <span class="label">Дата окончания:</span> {{ document.expiry_date|date:"d.m.Y" }}
+        </div>
+        <div class="info-row">
+            <span class="label">Ответственный:</span> {{ document.responsible_name }} ({{ document.responsible_email }})
+        </div>
+
+        {% if document.comments %}
+        <div class="info-row">
+            <span class="label">Комментарий:</span><br>
+            {{ document.comments }}
+        </div>
+        {% endif %}
+    </div>
+
+    <p>
+        {% if days_left < 0 %}
+        Срок действия документа уже истек. Пожалуйста, примите необходимые меры для обновления документа в ближайшее время.
+        {% elif days_left <= 7 %}
+        Срок действия документа истекает совсем скоро. Пожалуйста, не откладывайте обновление документа.
+        {% elif days_left <= 30 %}
+        Рекомендуем начать процесс обновления/продления документа в ближайшее время.
+        {% else %}
+        Просим заранее позаботиться о продлении или обновлении документа до истечения срока его действия.
+        {% endif %}
+    </p>
+
+    <p>В случае возникновения вопросов, пожалуйста, обратитесь к системному администратору.</p>
+
+    <p>С уважением,<br>Система Re:Docs</p>
+
+    <div class="footer">
+        Это автоматическое уведомление системы Re:Docs. Пожалуйста, не отвечайте на это письмо.
+    </div>
+</div>
+</body>
+</html>
