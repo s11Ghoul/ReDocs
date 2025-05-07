@@ -152,7 +152,10 @@ class DocumentFilterForm(forms.Form):
     title = forms.CharField(
         required=False,
         label=_('Название документа'),
-        widget=forms.TextInput(attrs={'placeholder': _('Поиск по названию...')})
+        widget=forms.TextInput(attrs={
+            'placeholder': _('Поиск по названию...'),
+            'class': 'form-control'
+        })
     )
 
     status = forms.ChoiceField(

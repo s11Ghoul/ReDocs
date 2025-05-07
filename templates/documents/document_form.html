@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{{ title }} | Re:Docs{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-{% if form.instance.pk %}edit{% else %}plus-circle{% endif %}"></i> {{ title }}
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-light">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-{% if form.instance.pk %}edit{% else %}plus-circle{% endif %}"></i>
+            {% if form.instance.pk %}
+            {% trans "Редактирование документа" %}
+            {% else %}
+            {% trans "Добавление нового документа" %}
+            {% endif %}
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="mb-3">{% trans "Основная информация" %}</h5>
+
+                    <!-- Название документа -->
+                    <div class="mb-3">
+                        <label for="{{ form.title.id_for_label }}" class="form-label">{{ form.title.label }}</label>
+                        <input type="text" name="{{ form.title.html_name }}" id="{{ form.title.id_for_label }}"
+                               class="form-control {% if form.title.errors %}is-invalid{% endif %}"
+                               value="{{ form.title.value|default_if_none:'' }}" required>
+                        {% if form.title.errors %}
+                        <div class="invalid-feedback">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Дата получения -->
+                            <div class="mb-3">
+                                <label for="{{ form.received_date.id_for_label }}" class="form-label">{{ form.received_date.label }}</label>
+                                <input type="date" name="{{ form.received_date.html_name }}" id="{{ form.received_date.id_for_label }}"
+                                       class="form-control {% if form.received_date.errors %}is-invalid{% endif %}"
+                                       value="{{ form.received_date.value|date:'Y-m-d'|default_if_none:'' }}" required>
+                                {% if form.received_date.errors %}
+                                <div class="invalid-feedback">{{ form.received_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <!-- Дата окончания -->
+                            <div class="mb-3">
+                                <label for="{{ form.expiry_date.id_for_label }}" class="form-label">{{ form.expiry_date.label }}</label>
+                                <input type="date" name="{{ form.expiry_date.html_name }}" id="{{ form.expiry_date.id_for_label }}"
+                                       class="form-control {% if form.expiry_date.errors %}is-invalid{% endif %}"
+                                       value="{{ form.expiry_date.value|date:'Y-m-d'|default_if_none:'' }}" required>
+                                {% if form.expiry_date.errors %}
+                                <div class="invalid-feedback">{{ form.expiry_date.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mt-4 mb-3">{% trans "Контактная информация" %}</h5>
+
+                    <!-- Ответственный -->
+                    <div class="mb-3">
+                        <label for="{{ form.responsible_name.id_for_label }}" class="form-label">{{ form.responsible_name.label }}</label>
+                        <input type="text" name="{{ form.responsible_name.html_name }}" id="{{ form.responsible_name.id_for_label }}"
+                               class="form-control {% if form.responsible_name.errors %}is-invalid{% endif %}"
+                               value="{{ form.responsible_name.value|default_if_none:'' }}" required>
+                        {% if form.responsible_name.errors %}
+                        <div class="invalid-feedback">{{ form.responsible_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email ответственного -->
+                    <div class="mb-3">
+                        <label for="{{ form.responsible_email.id_for_label }}" class="form-label">{{ form.responsible_email.label }}</label>
+                        <input type="email" name="{{ form.responsible_email.html_name }}" id="{{ form.responsible_email.id_for_label }}"
+                               class="form-control {% if form.responsible_email.errors %}is-invalid{% endif %}"
+                               value="{{ form.responsible_email.value|default_if_none:'' }}" required>
+                        {% if form.responsible_email.errors %}
+                        <div class="invalid-feedback">{{ form.responsible_email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Дополнительные email -->
+                    <div class="mb-3">
+                        <label for="{{ form.additional_emails.id_for_label }}" class="form-label">{{ form.additional_emails.label }}</label>
+                        <input type="text" name="{{ form.additional_emails.html_name }}" id="{{ form.additional_emails.id_for_label }}"
+                               class="form-control {% if form.additional_emails.errors %}is-invalid{% endif %}"
+                               value="{{ form.additional_emails.value|default_if_none:'' }}"
+                               placeholder="email1@example.com, email2@example.com">
+                        {% if form.additional_emails.errors %}
+                        <div class="invalid-feedback">{{ form.additional_emails.errors.0 }}</div>
+                        {% endif %}
+                        <div class="form-text">{% trans "Введите email адреса через запятую" %}</div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <h5 class="mb-3">{% trans "Настройки напоминаний" %}</h5>
+
+                    <div class="card mb-4">
+                        <div class="card-body bg-light">
+                            <p class="mb-3">
+                                <i class="fas fa-info-circle text-primary"></i>
+                                {% trans "Выберите, когда отправлять напоминания о приближении срока окончания документа:" %}
+                            </p>
+
+                            <!-- Периоды напоминаний -->
+                            <div class="mb-3">
+                                <label class="form-label">{{ form.reminder_periods.label }}</label>
+                                <div class="row">
+                                    {% for choice in form.reminder_periods.field.choices %}
+                                    <div class="col-md-6 mb-2">
+                                        <div class="form-check">
+                                            <input type="checkbox" name="{{ form.reminder_periods.html_name }}"
+                                                   id="id_reminder_periods_{{ forloop.counter0 }}"
+                                                   value="{{ choice.0 }}"
+                                                   class="form-check-input"
+                                                   {% if choice.0|stringformat:"s" in form.reminder_periods.value %}checked{% endif %}>
+                                            <label class="form-check-label" for="id_reminder_periods_{{ forloop.counter0 }}">
+                                                {{ choice.1 }}
+                                            </label>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Пользовательский период -->
+                            <div class="mt-3">
+                                <div class="mb-3">
+                                    <label for="{{ form.custom_reminder_period.id_for_label }}" class="form-label">{{ form.custom_reminder_period.label }}</label>
+                                    <input type="number" name="{{ form.custom_reminder_period.html_name }}"
+                                           id="{{ form.custom_reminder_period.id_for_label }}"
+                                           class="form-control {% if form.custom_reminder_period.errors %}is-invalid{% endif %}"
+                                           value="{{ form.custom_reminder_period.value|default_if_none:'' }}"
+                                           min="1" max="1825">
+                                    {% if form.custom_reminder_period.errors %}
+                                    <div class="invalid-feedback">{{ form.custom_reminder_period.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5 class="mb-3">{% trans "Файл и комментарии" %}</h5>
+
+                    <!-- Файл документа -->
+                    <div class="mb-3">
+                        <label for="{{ form.document_file.id_for_label }}" class="form-label">{{ form.document_file.label }}</label>
+                        <input type="file" name="{{ form.document_file.html_name }}"
+                               id="{{ form.document_file.id_for_label }}"
+                               class="form-control {% if form.document_file.errors %}is-invalid{% endif %}">
+                        {% if form.document_file.errors %}
+                        <div class="invalid-feedback">{{ form.document_file.errors.0 }}</div>
+                        {% endif %}
+
+                        {% if form.instance.document_file %}
+                        <div class="alert alert-info mt-2">
+                            <i class="fas fa-paperclip"></i>
+                            {% trans "Текущий файл" %}:
+                            <a href="{{ form.instance.document_file.url }}" target="_blank">
+                                {{ form.instance.document_file.name|slice:"10:" }}
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        <div id="file-info"></div>
+                        <small class="form-text text-muted">
+                            {% trans "Допустимые форматы файлов: PDF, JPG. Максимальный размер: 10 МБ." %}
+                        </small>
+                    </div>
+
+                    <!-- Комментарии -->
+                    <div class="mb-3">
+                        <label for="{{ form.comments.id_for_label }}" class="form-label">{{ form.comments.label }}</label>
+                        <textarea name="{{ form.comments.html_name }}"
+                                  id="{{ form.comments.id_for_label }}"
+                                  class="form-control {% if form.comments.errors %}is-invalid{% endif %}"
+                                  rows="4">{{ form.comments.value|default_if_none:'' }}</textarea>
+                        {% if form.comments.errors %}
+                        <div class="invalid-feedback">{{ form.comments.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12 d-flex justify-content-between">
+                    <a href="{% url 'documents:document_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> {% trans "Отмена" %}
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i>
+                        {% if form.instance.pk %}
+                        {% trans "Сохранить изменения" %}
+                        {% else %}
+                        {% trans "Создать документ" %}
+                        {% endif %}
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Валидация формы на стороне клиента
+    (function() {
+        'use strict';
+        window.addEventListener('load', function() {
+            var forms = document.getElementsByClassName('needs-validation');
+            Array.prototype.filter.call(forms, function(form) {
+                form.addEventListener('submit', function(event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
+
+    // Проверка даты окончания
+    document.addEventListener('DOMContentLoaded', function() {
+        var receivedDateField = document.getElementById('{{ form.received_date.id_for_label }}');
+        var expiryDateField = document.getElementById('{{ form.expiry_date.id_for_label }}');
+
+        function validateDates() {
+            if (receivedDateField.value && expiryDateField.value) {
+                var receivedDate = new Date(receivedDateField.value);
+                var expiryDate = new Date(expiryDateField.value);
+
+                if (expiryDate < receivedDate) {
+                    expiryDateField.setCustomValidity('{% trans "Дата окончания не может быть раньше даты получения" %}');
+                } else {
+                    expiryDateField.setCustomValidity('');
+                }
+            }
+        }
+
+        receivedDateField.addEventListener('change', validateDates);
+        expiryDateField.addEventListener('change', validateDates);
+
+        // Предварительный просмотр файла
+        var fileInput = document.getElementById('{{ form.document_file.id_for_label }}');
+        var fileInfoContainer = document.getElementById('file-info');
+
+        if (fileInput && fileInfoContainer) {
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length > 0) {
+                    var file = fileInput.files[0];
+                    var fileSize = (file.size / 1024 / 1024).toFixed(2); // в МБ
+
+                    var fileIcon = 'fas fa-file';
+                    if (file.type.includes('pdf')) {
+                        fileIcon = 'fas fa-file-pdf';
+                    } else if (file.type.includes('image')) {
+                        fileIcon = 'fas fa-file-image';
+                    }
+
+                    fileInfoContainer.innerHTML = `
+                    <div class="alert alert-info mt-2">
+                        <i class="${fileIcon}"></i> ${file.name} (${fileSize} МБ)
+                    </div>
+                `;
+
+                    // Проверка размера файла
+                    if (file.size > 10 * 1024 * 1024) { // 10 МБ
+                        fileInfoContainer.innerHTML += `
+                        <div class="alert alert-danger mt-2">
+                            <i class="fas fa-exclamation-triangle"></i> {% trans "Размер файла превышает максимально допустимый (10 МБ)" %}
+                        </div>
+                    `;
+                        fileInput.setCustomValidity('{% trans "Размер файла превышает допустимый лимит" %}');
+                    } else {
+                        fileInput.setCustomValidity('');
+                    }
+
+                    // Проверка формата файла
+                    var fileExtension = file.name.split('.').pop().toLowerCase();
+                    var allowedExtensions = ['pdf', 'jpg', 'jpeg'];
+
+                    if (!allowedExtensions.includes(fileExtension)) {
+                        fileInfoContainer.innerHTML += `
+                        <div class="alert alert-danger mt-2">
+                            <i class="fas fa-exclamation-triangle"></i> {% trans "Недопустимый формат файла. Разрешены только: PDF, JPG" %}
+                        </div>
+                    `;
+                        fileInput.setCustomValidity('{% trans "Недопустимый формат файла" %}');
+                    } else {
+                        fileInput.setCustomValidity('');
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

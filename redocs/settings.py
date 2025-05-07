@@ -32,6 +32,7 @@ INSTALLED_APPS = [
 
     # Сторонние библиотеки
     'crispy_forms',
+    'widget_tweaks',
 
     # Приложения проекта
     'documents',

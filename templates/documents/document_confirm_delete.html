@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Удаление документа" %} | Re:Docs{% endblock %}
+
+{% block page_title %}
+<i class="fas fa-trash"></i> {% trans "Подтверждение удаления" %}
+{% endblock %}
+
+{% block content %}
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-exclamation-triangle"></i> {% trans "Внимание! Это действие нельзя отменить." %}
+        </h5>
+    </div>
+    <div class="card-body">
+        <h5 class="mb-4">{% trans "Вы действительно хотите удалить документ" %} "{{ object.title }}"?</h5>
+
+        <div class="alert alert-warning">
+            <p><strong>{% trans "Информация о документе" %}:</strong></p>
+            <ul class="mb-0">
+                <li>{% trans "Название" %}: {{ object.title }}</li>
+                <li>{% trans "Ответственный" %}: {{ object.responsible_name }}</li>
+                <li>{% trans "Дата получения" %}: {{ object.received_date|date:"d.m.Y" }}</li>
+                <li>{% trans "Дата окончания" %}: {{ object.expiry_date|date:"d.m.Y" }}</li>
+                {% if object.document_file %}
+                <li>{% trans "Файл" %}: <i class="fas fa-paperclip"></i> {% trans "Прикреплен" %}</li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <p class="text-danger">
+            <i class="fas fa-exclamation-circle"></i>
+            {% trans "При удалении документа будут также удалены все связанные с ним напоминания и записи журнала." %}
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'documents:document_detail' object.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> {% trans "Отмена" %}
+                </a>
+
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> {% trans "Удалить документ" %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
