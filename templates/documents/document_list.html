@@ -17,7 +17,7 @@
         </h5>
     </div>
     <div class="card-body">
-        <form method="get" class="row g-3">
+        <form method="get" class="row g-3" id="documentFilterForm">
             <div class="col-md-4">
                 <label for="{{ filter_form.title.id_for_label }}" class="form-label">{{ filter_form.title.label }}</label>
                 <input type="text" name="{{ filter_form.title.html_name }}"
@@ -28,13 +28,24 @@
             </div>
 
             <div class="col-md-2">
-                <label for="{{ filter_form.status.id_for_label }}" class="form-label">{{ filter_form.status.label }}</label>
-                <select name="{{ filter_form.status.html_name }}"
-                        id="{{ filter_form.status.id_for_label }}"
-                        class="form-select">
-                    {% for value, text in filter_form.status.field.choices %}
-                    <option value="{{ value }}" {% if value == filter_form.status.value %}selected{% endif %}>{{ text }}</option>
-                    {% endfor %}
+                <label for="id_status" class="form-label">{% trans "Статус" %}</label>
+                <select name="status" id="id_status" class="form-select">
+                    <option value="" {% if not filter_form.status.value %}selected{% endif %}>{% trans "Все статусы" %}</option>
+
+                    <!-- Опция "Действительны" (будет включать и "Скоро истекают") -->
+                    <option value="active" {% if filter_form.status.value == 'active' or request.GET.status__in == 'active,expiring_soon' %}selected{% endif %}>
+                    {% trans "Действительны" %}
+                    </option>
+
+                    <!-- Опция "Скоро истекают" -->
+                    <option value="expiring_soon" {% if filter_form.status.value == 'expiring_soon' %}selected{% endif %}>
+                    {% trans "Скоро истекают" %}
+                    </option>
+
+                    <!-- Опция "Просрочены" -->
+                    <option value="expired" {% if filter_form.status.value == 'expired' %}selected{% endif %}>
+                    {% trans "Просрочены" %}
+                    </option>
                 </select>
             </div>
 
@@ -71,6 +82,9 @@
                     <i class="fas fa-times"></i> {% trans "Сбросить" %}
                 </a>
             </div>
+
+            <!-- Скрытое поле для хранения оригинальных статусов -->
+            <input type="hidden" name="original_status" id="originalStatus" value="">
         </form>
     </div>
 </div>
@@ -90,7 +104,10 @@
         <div class="card bg-success text-white">
             <div class="card-body text-center">
                 <h6 class="card-title">{% trans "Действительны" %}</h6>
-                <h3 class="card-text">{{ active_documents }}</h3>
+                {% comment %}
+                Отображаем сумму действительных документов и документов, которые скоро истекают
+                {% endcomment %}
+                <h3 class="card-text">{{ active_documents|add:expiring_soon_documents }}</h3>
             </div>
         </div>
     </div>
@@ -140,7 +157,7 @@
                 </thead>
                 <tbody>
                 {% for document in documents %}
-                <tr>
+                <tr class="document-row" data-status="{{ document.status }}">
                     <td>
                         <a href="{% url 'documents:document_detail' document.pk %}">
                             {{ document.title }}
@@ -242,4 +259,81 @@
         {% endif %}
     </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Получаем элементы формы
+        const filterForm = document.getElementById('documentFilterForm');
+        const statusSelect = document.getElementById('id_status');
+
+        // Обработчик события отправки формы
+        filterForm.addEventListener('submit', function(event) {
+            // Если выбран вариант "Действительны"
+            if (statusSelect.value === 'active') {
+                // Предотвращаем стандартную отправку формы
+                event.preventDefault();
+
+                // Создаем объект FormData для работы с данными формы
+                const formData = new FormData(filterForm);
+
+                // Удаляем поле status из FormData
+                formData.delete('status');
+
+                // Создаем новый URL с параметрами из формы
+                const url = new URL(window.location.href);
+                const params = new URLSearchParams(url.search);
+
+                // Очищаем существующие параметры
+                for (const key of params.keys()) {
+                    params.delete(key);
+                }
+
+                // Добавляем все поля из формы, кроме status
+                for (const [key, value] of formData.entries()) {
+                    if (key !== 'status' && key !== 'original_status' && value) {
+                        params.set(key, value);
+                    }
+                }
+
+                // Добавляем параметр для фильтрации по обоим статусам
+                params.set('status__in', 'active,expiring_soon');
+
+                // Обновляем URL и переходим на него
+                url.search = params.toString();
+                window.location.href = url.toString();
+            }
+        });
+
+        // Проверяем параметры URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+        const statusIn = urlParams.get('status__in');
+
+        // Если есть параметр status=active, то обрабатываем документы с обоими статусами на стороне клиента
+        if (status === 'active' && !statusIn) {
+            // Находим все строки документов
+            const rows = document.querySelectorAll('tbody tr.document-row');
+
+            // Для каждой строки проверяем статус
+            rows.forEach(row => {
+                const statusCell = row.querySelector('td:nth-child(5)');
+                if (statusCell) {
+                    const statusText = statusCell.textContent.trim();
+                    // Если статус не "Действителен" и не "Скоро истекает", скрываем строку
+                    if (!statusText.includes('Действителен') && !statusText.includes('Скоро истекает')) {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // Если есть параметр status__in=active,expiring_soon, выбираем опцию "Действительны"
+        if (statusIn === 'active,expiring_soon') {
+            statusSelect.value = 'active';
+        }
+    });
+</script>
 {% endblock %}

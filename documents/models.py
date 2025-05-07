@@ -55,6 +55,11 @@ class Document(models.Model):
 
         super().save(*args, **kwargs)
 
+    def is_valid(self):
+        """Проверка, действителен ли документ"""
+        # Документ считается действительным, если он не просрочен
+        return self.status != 'expired'
+
     def get_recipient_emails(self):
         """Получение всех email адресов для уведомлений"""
         emails = [self.responsible_email]
