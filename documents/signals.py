@@ -60,7 +60,7 @@ def update_reminder_status(sender, instance, created, **kwargs):
         if instance.should_send_today():
             # Запускаем отправку уведомления в фоновом режиме
             from .tasks import send_document_reminder
-            transaction.on_commit(lambda: send_document_reminder.delay(instance.document.id, instance.id))
+            transaction.on_commit(lambda: send_document_reminder(instance.document, instance))
 
 
 @receiver(post_save, sender=EmailLog)

@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+
     # Сторонние библиотеки
     'crispy_forms',
 
@@ -162,3 +163,4 @@ ALLOWED_UPLOAD_EXTENSIONS = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '
 
 # Админские настройки
 ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', 'admin@redocs.local')
+LOGIN_URL = '/login/'

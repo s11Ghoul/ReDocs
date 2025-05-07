@@ -1,59 +1,63 @@
-{% extends "base.html" %}
-{% load i18n %}
-{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в систему | Re:Docs</title>
 
-{% block title %}{% trans "Вход в систему" %} | Re:Docs{% endblock %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="my-2">
+                        <i class="fas fa-file-contract"></i> Re:Docs
+                    </h4>
+                    <p class="mb-0">Система управления документами</p>
+                </div>
+                <div class="card-body p-4">
+                    <h5 class="card-title text-center mb-4">Вход в систему</h5>
 
-{% block header %}{% endblock %}
+                    <form method="post">
+                        {% csrf_token %}
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white text-center">
-                <h4 class="my-2">
-                    <i class="fas fa-file-contract"></i> Re:Docs
-                </h4>
-                <p class="mb-0">{% trans "Система управления документами" %}</p>
-            </div>
-            <div class="card-body p-4">
-                <h5 class="card-title text-center mb-4">{% trans "Вход в систему" %}</h5>
-
-                <form method="post" action="{% url 'login' %}">
-                    {% csrf_token %}
-
-                    {% if form.errors %}
-                    <div class="alert alert-danger">
-                        {% trans "Неверное имя пользователя или пароль" %}
-                    </div>
-                    {% endif %}
-
-                    <div class="mb-3">
-                        <label for="id_username" class="form-label">{% trans "Имя пользователя" %}</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            <input type="text" name="username" id="id_username" class="form-control" required autofocus>
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Имя пользователя</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" name="username" id="id_username" class="form-control" required autofocus>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-4">
-                        <label for="id_password" class="form-label">{% trans "Пароль" %}</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" name="password" id="id_password" class="form-control" required>
+                        <div class="mb-4">
+                            <label for="id_password" class="form-label">Пароль</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" name="password" id="id_password" class="form-control" required>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-sign-in-alt"></i> {% trans "Войти" %}
-                        </button>
-                    </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt"></i> Войти
+                            </button>
+                        </div>
 
-                    <input type="hidden" name="next" value="{{ next }}">
-                </form>
+                        <input type="hidden" name="next" value="{{ next }}">
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
+
+<!-- JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
