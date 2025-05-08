@@ -231,3 +231,37 @@ def send_health_check_report(health_check):
         html_message=html_message,
         fail_silently=True,
     )
+
+@shared_task
+def update_document_statuses():
+    """Обновление статусов документов"""
+    today = timezone.now().date()
+    updated_count = 0
+
+    # Найти просроченные документы и обновить их статус
+    expired_docs = Document.objects.filter(
+        expiry_date__lt=today,
+        status__in=['active', 'expiring_soon']
+    )
+    expired_count = expired_docs.update(status='expired')
+
+    # Найти документы, которые скоро истекут
+    expiring_soon_docs = Document.objects.filter(
+        expiry_date__gte=today,
+        expiry_date__lte=today + timezone.timedelta(days=30),
+        status='active'
+    )
+    expiring_soon_count = expiring_soon_docs.update(status='expiring_soon')
+
+    # Найти активные документы (которые были помечены как "скоро истекут",
+    # но срок был продлен)
+    active_docs = Document.objects.filter(
+        expiry_date__gt=today + timezone.timedelta(days=30),
+        status='expiring_soon'
+    )
+    active_count = active_docs.update(status='active')
+
+    total_updated = expired_count + expiring_soon_count + active_count
+    logger.info(f"Обновлены статусы документов: {total_updated} (просрочено: {expired_count}, скоро истекут: {expiring_soon_count}, активных: {active_count})")
+
+    return total_updated

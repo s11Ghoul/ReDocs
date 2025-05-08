@@ -28,3 +28,19 @@ app.conf.beat_schedule = {
 @app.task(bind=True)
 def debug_task(self):
     print(f'Request: {self.request!r}')
+
+app.conf.beat_schedule = {
+    'check-document-reminders-daily': {
+        'task': 'documents.tasks.check_document_reminders',
+        'schedule': crontab(hour=4, minute=0),
+    },
+    'run-health-check-daily': {
+        'task': 'documents.tasks.run_health_check',
+        'schedule': crontab(hour=5, minute=0),
+    },
+    # Добавляем новую задачу
+    'update-document-statuses': {
+        'task': 'documents.tasks.update_document_statuses',
+        'schedule': crontab(minute=0),  # Каждый час в начале часа
+    },
+}
